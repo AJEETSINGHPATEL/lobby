@@ -2,7 +2,7 @@
     "name": "streamly-ytx-root",
     "version": "1.0.0",
     "scripts": {
-        "build": "cd client && npm install && npm run build && cd .. && rm -rf public && cp -r client/dist public",
+        "build": "cd server && npm install && cd .. && cd client && npm install && npm run build && cd .. && rm -rf public && cp -r client/dist public",
         "start": "npm start --prefix server"
     }
 }
