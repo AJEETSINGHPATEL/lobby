@@ -3,6 +3,7 @@
     "version": "1.0.0",
     "scripts": {
         "build": "cd server && npm install && cd .. && cd client && npm install && npm run build && cd .. && rm -rf public && cp -r client/dist public",
+        "postinstall": "cd server && npm install",
         "start": "npm start --prefix server"
     }
 }
