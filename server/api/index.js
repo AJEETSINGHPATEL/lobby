@@ -5,8 +5,24 @@ import dotenv from "dotenv";
 import path from "path";
 import { fileURLToPath } from "url";
 
+import fs from "fs";
+
 const __filename = fileURLToPath(import.meta.url);
 const __direname = path.dirname(__filename);
+
+// Debugging: List files in root directory to diagnose missing public folder
+const rootPath = path.join(__direname, "../../");
+console.log("Root directory contents:", fs.readdirSync(rootPath));
+try {
+    const publicPath = path.join(rootPath, "public");
+    if (fs.existsSync(publicPath)) {
+        console.log("Public directory contents:", fs.readdirSync(publicPath));
+    } else {
+        console.log("Public directory does not exist");
+    }
+} catch (e) {
+    console.log("Error checking public dir:", e);
+}
 
 dotenv.config();
 const app = express();
@@ -21,12 +37,23 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 8001;
 
-// Serve static files from the 'public' directory (where build output is copied)
-const clientPath = path.join(__direname, "../../public");
+// Serve static files
+let clientPath = path.join(__direname, "../../public");
+if (!fs.existsSync(path.join(clientPath, "index.html"))) {
+    console.log("public/index.html not found, checking client/dist...");
+    clientPath = path.join(__direname, "../../client/dist");
+}
+
+console.log(`Serving static files from: ${clientPath}`);
 app.use(express.static(clientPath));
 
 app.get("*splat", (req, res) => {
-    res.sendFile(path.join(clientPath, "index.html"));
+    const indexPath = path.join(clientPath, "index.html");
+    if (fs.existsSync(indexPath)) {
+        res.sendFile(indexPath);
+    } else {
+        res.status(404).send("Client build not found. Please check build logs.");
+    }
 });
 
 let storeSocketId = [];
