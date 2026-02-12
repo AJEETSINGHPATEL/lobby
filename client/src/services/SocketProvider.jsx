@@ -8,7 +8,7 @@ export const useSocket = () => {
 
 function SocketProvider({ children }) {
   const socket = useMemo(() =>
-    io([import.meta.env.VITE_API_URL], {
+    io(import.meta.env.VITE_API_URL, {
       // transports: ["polling"],
     })
   );
