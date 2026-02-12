@@ -21,10 +21,13 @@ const io = new Server(server, {
 
 const PORT = process.env.PORT || 8001;
 
-// Vercel handles static files via 'public' directory, so we don't strictly need this for production
-// But keeping it for local dev if needed, though path resolution might be tricky in serverless
-// const clientPath = path.join(__direname, "../../client/dist");
-// app.use(express.static(clientPath));
+// Serve static files from the 'public' directory (where build output is copied)
+const clientPath = path.join(__direname, "../../public");
+app.use(express.static(clientPath));
+
+app.get("*splat", (req, res) => {
+    res.sendFile(path.join(clientPath, "index.html"));
+});
 
 let storeSocketId = [];
 let isRumFull = false;
