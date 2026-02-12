@@ -115,6 +115,10 @@ app.get("/api/", (req, res) => {
     res.send("Socket server is up and running.");
 });
 
-// REMOVED app.listen() for Vercel Serverless
+// Start the server
+server.listen(PORT, () => {
+    console.log(`🚀 Server running at http://localhost:${PORT}`);
+});
+
 // Export the app
 export default app;
