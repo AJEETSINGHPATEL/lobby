@@ -2,6 +2,14 @@
     "version": 2,
     "rewrites": [
         {
+            "source": "/socket.io/(.*)",
+            "destination": "/server/api/index.js"
+        },
+        {
+            "source": "/api/(.*)",
+            "destination": "/server/api/index.js"
+        },
+        {
             "source": "/assets/(.*)",
             "destination": "/public/assets/$1"
         },
