@@ -135,9 +135,14 @@ io.on("connection", (socket) => {
     socket.on("disconnect", (reason) => {
         console.log(`Socket disconnected: ${socket.id}, Reason: ${reason}`);
 
+
         storeSocketId = storeSocketId.filter(
             (socketMem) => socketMem.id !== socket.id
         );
+    });
+
+    socket.on("chat:message", ({ room, message, name }) => {
+        io.to(room).emit("chat:message", { message, name, id: socket.id });
     });
 });
 

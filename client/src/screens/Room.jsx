@@ -9,6 +9,9 @@ import {
   PowerCircle,
   SwitchCamera,
   SwitchCameraIcon,
+  MessageSquare,
+  X,
+  Send,
 } from "lucide-react";
 function Room() {
   const params = useParams();
@@ -30,6 +33,9 @@ function Room() {
   const isMobile = /Mobi|Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
   const [isFinishCall, setIsFinishCall] = useState(false);
   const [showButtons, setShowButtons] = useState(false);
+  const [showChat, setShowChat] = useState(false);
+  const [messages, setMessages] = useState([]);
+  const [newMessage, setNewMessage] = useState("");
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -245,6 +251,7 @@ function Room() {
       socket.off("user:disconnected", handleUserDiscconnect);
       socket.off("removed", handleRemoved);
     };
+    socket.on("chat:message", handleReceiveMessage);
   }, [
     socket,
     handleNewUserJoined,
@@ -256,6 +263,17 @@ function Room() {
     handleUserDiscconnect,
     handleRemoved,
   ]);
+
+  function handleReceiveMessage(data) {
+    setMessages((prev) => [...prev, data]);
+  }
+
+  function sendMessage() {
+    if (newMessage.trim()) {
+      socket.emit("chat:message", { room: params?.roomId, message: newMessage, name });
+      setNewMessage("");
+    }
+  }
 
   function removeStreams() {
     setIsCamSwitch(false);
@@ -468,8 +486,57 @@ function Room() {
                     <Mic className="w-5 h-5 text-teal-700" />
                   )}
                 </button>
+                <button
+                  onClick={() => setShowChat(!showChat)}
+                  title="Chat"
+                  className="p-2 hover:bg-zinc-100 h-fit rounded-full cursor-pointer"
+                >
+                  <MessageSquare className="w-5 h-5 text-blue-500" />
+                </button>
               </div>
             </div>
+
+            {showChat && (
+              <div className="absolute top-0 right-0 h-full w-80 bg-white shadow-lg border-l z-50 flex flex-col">
+                <div className="flex justify-between items-center p-3 border-b bg-gray-50">
+                  <h3 className="font-semibold">Chat</h3>
+                  <button onClick={() => setShowChat(false)} className="p-1 hover:bg-gray-200 rounded-full">
+                    <X className="w-4 h-4" />
+                  </button>
+                </div>
+                <div className="flex-1 overflow-y-auto p-4 space-y-3">
+                  {messages.map((msg, index) => (
+                    <div key={index} className={`flex flex-col ${msg.name === name ? 'items-end' : 'items-start'}`}>
+                      <span className="text-xs text-gray-500 mb-1">{msg.name}</span>
+                      <div className={`px-3 py-2 rounded-lg max-w-[80%] break-words ${msg.name === name
+                          ? 'bg-blue-500 text-white rounded-br-none'
+                          : 'bg-gray-100 text-gray-800 rounded-bl-none'
+                        }`}>
+                        {msg.message}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div className="p-3 border-t bg-gray-50 flex gap-2">
+                  <input
+                    type="text"
+                    value={newMessage}
+                    onChange={(e) => setNewMessage(e.target.value)}
+                    onKeyPress={(e) => e.key === 'Enter' && sendMessage()}
+                    placeholder="Type a message..."
+                    className="flex-1 px-3 py-2 border rounded-full text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  />
+                  <button
+                    onClick={sendMessage}
+                    disabled={!newMessage.trim()}
+                    className="p-2 bg-blue-500 text-white rounded-full hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                  >
+                    <Send className="w-4 h-4" />
+                  </button>
+                </div>
+              </div>
+            )}
+
             <ReactPlayer
               style={{
                 rotate: facingMode === "user" && "y 180deg",
